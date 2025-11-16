@@ -67,7 +67,7 @@ export default function HeroSection() {
             className="px-8 py-3 bg-[#2f2f32] rounded-md text-white font-medium hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
             whileHover={{ scale: 1.05, boxShadow: "0 0 20px #7f7f7f" }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => router.push('/auth/signin')}>
+            onClick={() => router.push('/auth/login')}>
               Start Exploring →
           </motion.button>
         </motion.div>
