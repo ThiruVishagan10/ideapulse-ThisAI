@@ -96,10 +96,10 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-black text-white">
       <SideNav />
-      <div className="ml-64 p-8">
+      <div className="ml-0 md:ml-52 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 mt-16 md:mt-0">
             <h1 className="text-4xl font-bold mb-2">Welcome back, {user.email?.split('@')[0]}</h1>
             <p className="text-gray-400">What do you want to create today?</p>
           </div>

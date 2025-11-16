@@ -1,5 +1,7 @@
+"use client";
 import React, { useState } from 'react';
 import { Sparkles, RefreshCw, Wand2, Brain, Grid3x3, Code, Target, TrendingUp, Upload } from 'lucide-react';
+import SideNav from '@/components/SideNav';
 
 const CreateIdeaForm: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -21,8 +23,10 @@ const CreateIdeaForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white">
+      <SideNav />
+      <div className="ml-0 md:ml-52 p-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -36,8 +40,28 @@ const CreateIdeaForm: React.FC = () => {
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Idea Title */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium mb-3">Idea Title</label>
+            <div className="group relative backdrop-blur-md rounded-2xl p-6 border border-white/20 transition-all duration-300 hover:scale-[1.02] overflow-hidden"
+              style={{
+                backgroundColor: 'rgba(22, 33, 53, 0.7)',
+                boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 30px 5px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 0 rgba(59, 130, 246, 0)';
+              }}
+            >
+              {/* Gradient border effect on hover */}
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%)',
+                  filter: 'blur(20px)',
+                  transform: 'translate(-10px, -10px)'
+                }}
+              />
+              <div className="relative z-10">
+                <label className="block text-sm font-medium mb-3">Idea Title</label>
               <input
                 type="text"
                 value={title}
@@ -58,11 +82,32 @@ const CreateIdeaForm: React.FC = () => {
                   <RefreshCw className="w-4 h-4" />
                 </button>
               </div>
+              </div>
             </div>
 
             {/* Description */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium mb-3">Description / Idea Body</label>
+            <div className="group relative backdrop-blur-md rounded-2xl p-6 border border-white/20 transition-all duration-300 hover:scale-[1.02] overflow-hidden"
+              style={{
+                backgroundColor: 'rgba(22, 33, 53, 0.7)',
+                boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 30px 5px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 0 rgba(59, 130, 246, 0)';
+              }}
+            >
+              {/* Gradient border effect on hover */}
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%)',
+                  filter: 'blur(20px)',
+                  transform: 'translate(-10px, -10px)'
+                }}
+              />
+              <div className="relative z-10">
+                <label className="block text-sm font-medium mb-3">Description / Idea Body</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -70,6 +115,7 @@ const CreateIdeaForm: React.FC = () => {
                 rows={10}
                 className="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
               />
+              </div>
             </div>
 
             {/* AI Moodboard */}
@@ -129,6 +175,7 @@ const CreateIdeaForm: React.FC = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

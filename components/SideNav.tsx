@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Home, PlusCircle, Sparkles, GitCompare, Archive, Settings, MapPin, ChevronUp, ChevronDown, LogOut, Sliders } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Home, PlusCircle, Sparkles, GitCompare, Archive, Settings, MapPin, ChevronUp, ChevronDown, LogOut, Sliders, Menu, X } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 interface NavItem {
@@ -13,9 +13,20 @@ interface NavItem {
 }
 
 export default function SideNav() {
-  const [activeItem, setActiveItem] = useState('home');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const getActiveItem = () => {
+    if (pathname === '/dashboard') return 'home';
+    if (pathname === '/create') return 'create';
+    if (pathname === '/analyzer') return 'analyzer';
+    if (pathname === '/vault') return 'vault';
+    return 'home';
+  };
+
+  const activeItem = getActiveItem();
 
   const navItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home size={20} />, href: '/dashboard' },
@@ -24,13 +35,33 @@ export default function SideNav() {
     { id: 'vault', label: 'Idea Vault', icon: <Archive size={20} />, href: '/vault' },
   ];
 
-  const handleNavClick = (id: string, href: string) => {
-    setActiveItem(id);
+  const handleNavClick = (href: string) => {
     router.push(href);
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <div className="flex flex-col h-screen w-52 bg-gradient-to-b from-slate-900 to-slate-800 text-white fixed left-0 top-0 z-40">
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 text-white rounded-lg"
+      >
+        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`flex flex-col h-screen w-52 bg-linear-to-b from-slate-900 to-slate-800 text-white fixed left-0 top-0 z-40 transform transition-transform duration-300 ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
       {/* Logo */}
       <div className="flex items-center gap-2 p-6 border-b border-slate-700/50">
         <MapPin size={20} className="text-blue-400" />
@@ -42,7 +73,7 @@ export default function SideNav() {
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => handleNavClick(item.id, item.href)}
+            onClick={() => handleNavClick(item.href)}
             className={`
               w-full flex items-center gap-3 px-4 py-3 rounded-lg
               transition-all duration-200 text-left
@@ -109,5 +140,6 @@ export default function SideNav() {
         </button>
       </div>
     </div>
+    </>
   );
 }
