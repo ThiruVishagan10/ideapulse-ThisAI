@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 import SideNav from '@/components/SideNav';
 import { Sparkles, Lightbulb, TrendingUp, GitCompare } from 'lucide-react';
 
@@ -20,14 +21,21 @@ interface IdeaCard {
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      setLoading(false);
+      
+      if (!user) {
+        router.push('/auth/login');
+      }
     };
     getUser();
-  }, []);
+  }, [router]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -85,12 +93,16 @@ export default function Dashboard() {
     }
   ];
 
-  if (!user) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Loading...</div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
