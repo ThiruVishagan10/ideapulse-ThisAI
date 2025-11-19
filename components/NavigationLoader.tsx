@@ -9,8 +9,10 @@ export default function NavigationLoader() {
   const pathname = usePathname();
 
   useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 300);
+    const timer = setTimeout(() => {
+      setLoading(true);
+      setTimeout(() => setLoading(false), 300);
+    }, 0);
     return () => clearTimeout(timer);
   }, [pathname]);
 
@@ -18,7 +20,7 @@ export default function NavigationLoader() {
     <AnimatePresence>
       {loading && (
         <motion.div
-          className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 z-50"
+          className="fixed top-0 left-0 right-0 h-1 bg-linear-to-r from-cyan-500 to-blue-500 z-50"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           exit={{ scaleX: 0 }}

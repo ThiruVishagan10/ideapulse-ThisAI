@@ -17,7 +17,7 @@ const IdeaVault: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filters = ['All Ideas', 'Favorites', 'High Potential', 'Drafts', 'Auto-Generated'];
+  const filters = ['All Ideas', 'Favorites', 'High Potential', 'Drafts', 'AI Generated'];
 
   const ideas: Idea[] = [
     { id: 1, title: 'Smart Home Energy Grid', description: 'AI-powered energy optimization', category: 'AI Generated' },

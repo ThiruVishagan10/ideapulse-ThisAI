@@ -2,10 +2,20 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import Particles from './particles';
 
 export default function HeroSection() {
   const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyPress = () => {
+      router.push('/dashboard');
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [router]);
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -54,13 +64,14 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <motion.button
-            className="px-8 py-3 bg-[#2f2f32] rounded-md text-white font-medium hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
+          <motion.div
+            className="px-8 py-3 underline rounded-md text-white font-medium hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 cursor-pointer"
             whileHover={{ scale: 1.05, boxShadow: "0 0 20px #7f7f7f" }}
-            whileTap={{ scale: 0.95 }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity }}
             onClick={() => router.push('/dashboard')}>
-              Start Exploring →
-          </motion.button>
+              Press Any Key to Continue →
+          </motion.div>
         </motion.div>
       </div>
 
