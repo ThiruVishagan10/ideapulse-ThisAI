@@ -22,7 +22,7 @@ export default function SideNav() {
     if (pathname === '/dashboard') return 'home';
     if (pathname === '/create') return 'create';
     if (pathname === '/analyzer') return 'analyzer';
-    if (pathname === '/vault') return 'vault';
+    if (pathname === '/idea-vault') return 'idea-vault';
     return 'home';
   };
 
@@ -32,7 +32,7 @@ export default function SideNav() {
     { id: 'home', label: 'Home', icon: <Home size={20} />, href: '/dashboard' },
     { id: 'create', label: 'Create Idea', icon: <PlusCircle size={20} />, href: '/create' },
     { id: 'analyzer', label: 'AI Analyzer', icon: <Sparkles size={20} />, href: '/analyzer' },
-    { id: 'vault', label: 'Idea Vault', icon: <Archive size={20} />, href: '/vault' },
+    { id: 'vault', label: 'Idea Vault', icon: <Archive size={20} />, href: '/idea-vault' },
   ];
 
   const handleNavClick = (href: string) => {
@@ -63,8 +63,8 @@ export default function SideNav() {
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
       {/* Logo */}
-      <div className="flex items-center gap-2 p-6 border-b border-slate-700/50">
-        <MapPin size={20} className="text-blue-400" />
+      <div className="flex items-center gap-3 p-6 border-b border-slate-700/50">
+        <img src="/idea-pulse-logo.png" alt="IdeaPulse" className="w-8 h-8" />
         <h1 className="text-xl font-semibold">IdeaPulse</h1>
       </div>
 

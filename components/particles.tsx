@@ -1,16 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  duration: number;
-  left: number;
-  top: number;
-}
+import { motion } from 'framer-motion';
 
 export default function Particles() {
   const particles = useMemo(() => 
@@ -26,26 +17,24 @@ export default function Particles() {
 
   return (
     <>
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/50 z-1"></div>
-      {/* Animated particles */}
-      {particles.map((particle: Particle) => (
+      {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute w-1 h-1 bg-cyan-400/60 rounded-full"
+          className="absolute w-1 h-1 bg-white/30 rounded-full"
+          initial={{ opacity: 0 }}
           animate={{
-            x: [0, particle.x],
-            y: [0, particle.y],
-            opacity: [0, 1, 0]
+            opacity: [0, 1, 0],
+            x: [particle.x, particle.x + 50, particle.x],
+            y: [particle.y, particle.y - 30, particle.y]
           }}
           transition={{
             duration: particle.duration,
             repeat: Infinity,
-            ease: "easeInOut"
+            delay: particle.id * 0.2
           }}
           style={{
-            left: particle.left + '%',
-            top: particle.top + '%'
+            left: `${particle.left}%`,
+            top: `${particle.top}%`
           }}
         />
       ))}

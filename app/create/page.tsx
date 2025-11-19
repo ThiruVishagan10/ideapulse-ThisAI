@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Sparkles, RefreshCw, Wand2, Brain, Grid3x3, Code, Target, TrendingUp, Upload } from 'lucide-react';
 import SideNav from '@/components/SideNav';
+import GlowingOrb from '@/components/GlowingOrb';
+import Particles from '@/components/particles';
 
 const CreateIdeaForm: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -23,9 +25,13 @@ const CreateIdeaForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <div className="absolute inset-0 flex items-center justify-center md:ml-52">
+        <GlowingOrb />
+      </div>
+      <Particles />
       <SideNav />
-      <div className="ml-0 md:ml-52 p-8">
+      <div className="ml-0 md:ml-52 p-8 relative z-10">
         <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -117,27 +123,6 @@ const CreateIdeaForm: React.FC = () => {
               />
               </div>
             </div>
-
-            {/* AI Moodboard */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium mb-4">AI Moodboard (Optional)</label>
-              
-              <div className="border-2 border-dashed border-slate-700 rounded-xl p-12 text-center hover:border-blue-500 transition-colors cursor-pointer group">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center group-hover:bg-slate-700 transition-colors">
-                    <Upload className="w-8 h-8 text-slate-400 group-hover:text-blue-400 transition-colors" />
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-sm mb-1">Drag and drop images or let our AI generate a moodboard for you.</p>
-                  </div>
-                </div>
-              </div>
-
-              <button className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm">
-                <Sparkles className="w-4 h-4" />
-                Generate Moodboard
-              </button>
-            </div>
           </div>
 
           {/* AI Tools Sidebar */}
@@ -165,7 +150,7 @@ const CreateIdeaForm: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex justify-end gap-4">
+        <div className="mt-8 flex justify-center gap-4">
           <button className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors font-medium">
             Save Draft
           </button>
@@ -174,8 +159,8 @@ const CreateIdeaForm: React.FC = () => {
             Generate Full Concept
           </button>
         </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 };

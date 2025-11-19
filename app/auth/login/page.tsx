@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import GlowingOrb from '@/components/GlowingOrb';
 
 export default function SupabaseAuth() {
   const [email, setEmail] = useState('');
@@ -58,31 +59,7 @@ export default function SupabaseAuth() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
-      {/* Glowing orb background */}
-      <motion.div
-        className="absolute w-[800px] h-[800px] bg-blue-500/30 rounded-full blur-[100px]"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.4, 0.8, 0.4]
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="absolute w-[1200px] h-[1200px] bg-cyan-400/10 rounded-full blur-[150px]"
-        animate={{
-          scale: [1.2, 0.8, 1.2],
-          opacity: [0.2, 0.5, 0.2]
-        }}
-        transition={{
-          duration: 7,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
+      <GlowingOrb />
       <motion.div
         className="bg-white/10 backdrop-blur-md p-8 rounded-xl border border-white/20 w-full max-w-md shadow-2xl relative z-10"
         initial={{ opacity: 0, y: 20 }}
@@ -116,7 +93,7 @@ export default function SupabaseAuth() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full mb-4 px-4 py-3 bg-[#fff] text-black rounded-md border border-gray-600 focus:border-cyan-500 focus:outline-none"
+            className="w-full mb-4 px-4 py-3 bg-white text-black rounded-md border border-gray-600 focus:border-cyan-500 focus:outline-none"
             required
           />
           <input
@@ -124,7 +101,7 @@ export default function SupabaseAuth() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full mb-4 px-4 py-3 bg-[#fff] text-black rounded-md border border-gray-600 focus:border-cyan-500 focus:outline-none"
+            className="w-full mb-4 px-4 py-3 bg-white text-black rounded-md border border-gray-600 focus:border-cyan-500 focus:outline-none"
             required
           />
           <motion.button
