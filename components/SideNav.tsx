@@ -38,6 +38,7 @@ export default function SideNav() {
     if (pathname === "/analyzer") return "analyzer";
     if (pathname === "/moodboard") return "moodboard";
     if (pathname === "/idea-vault") return "vault";
+    if (pathname.startsWith("/idea/")) return "vault";
     return "home";
   };
 

@@ -49,24 +49,24 @@ const CreateIdeaForm = () => {
     setTagline(lines[Math.floor(Math.random() * lines.length)]);
   };
 
-  const createAndProcessIdea = async () => {
+  const generateContent = async () => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:8081/api/ai/create-and-process', {
+      const response = await fetch('http://127.0.0.1:8081/api/ai/multi-tools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
           content: description,
-          tools: selectedTools
+          tools: selectedTools,
+          mode: 'sync'
         })
       });
 
       const data = await response.json();
       
       const resultData = {
-        idea_id: data.idea_id,
+        idea_id: 'temp-' + Date.now(),
         status: data.status,
         per_tool_results: data.per_tool_results,
         combined_result: data.combined_result,
@@ -75,14 +75,14 @@ const CreateIdeaForm = () => {
       };
       
       setResult(resultData);
-      setIdeaId(data.idea_id);
+      setIdeaId(resultData.idea_id);
       
-      // Store in localStorage and navigate
-      localStorage.setItem(`idea-${data.idea_id}`, JSON.stringify(resultData));
-      router.push(`/idea/${data.idea_id}`);
+      // Store and navigate to new page
+      localStorage.setItem(`idea-${resultData.idea_id}`, JSON.stringify(resultData));
+      router.push(`/idea/${resultData.idea_id}`);
       
     } catch (error) {
-      console.error('Error creating and processing idea:', error);
+      console.error('Error generating content:', error);
       
       // Fallback mock response
       const mockResult = {
@@ -101,7 +101,7 @@ const CreateIdeaForm = () => {
       setResult(mockResult);
       setIdeaId(mockResult.idea_id);
       
-      // Store in localStorage and navigate
+      // Store and navigate to new page
       localStorage.setItem(`idea-${mockResult.idea_id}`, JSON.stringify(mockResult));
       router.push(`/idea/${mockResult.idea_id}`);
     } finally {
@@ -109,9 +109,42 @@ const CreateIdeaForm = () => {
     }
   };
 
+  const saveToVault = async () => {
+    if (!result) return;
+    
+    try {
+      const response = await fetch('http://127.0.0.1:8081/api/ai/save-to-vault', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          content: description,
+          creator_id: 'user123',
+          snapshots: result.per_tool_results.map((toolResult: any) => ({
+            tool: toolResult.tool,
+            content: toolResult.result
+          }))
+        })
+      });
+
+      const data = await response.json();
+      const savedResult = { ...result, idea_id: data.idea_id };
+      
+      setResult(savedResult);
+      setIdeaId(data.idea_id);
+      
+      localStorage.setItem(`idea-${data.idea_id}`, JSON.stringify(savedResult));
+      router.push(`/idea/${data.idea_id}`);
+      
+    } catch (error) {
+      console.error('Error saving to vault:', error);
+      alert('Failed to save to vault. Please try again.');
+    }
+  };
+
   const handleSaveDraft = async () => {
-    console.log('Draft saved:', { title, description });
-    alert('Draft saved successfully!');
+    localStorage.setItem('draft-idea', JSON.stringify({ title, description, selectedTools }));
+    alert('Draft saved locally!');
   };
 
   const replaceBody = () => {
@@ -210,11 +243,20 @@ const CreateIdeaForm = () => {
 
                 {selectedTools.length > 0 && (
                   <button
-                    onClick={createAndProcessIdea}
+                    onClick={generateContent}
                     disabled={loading}
                     className="w-full mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition disabled:opacity-50"
                   >
-                    {loading ? 'Processing...' : 'Create & Process'}
+                    {loading ? 'Processing...' : 'Generate with AI'}
+                  </button>
+                )}
+                
+                {result && result.status === 'completed' && (
+                  <button
+                    onClick={saveToVault}
+                    className="w-full mt-2 px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg transition"
+                  >
+                    Save to Vault
                   </button>
                 )}
               </div>
