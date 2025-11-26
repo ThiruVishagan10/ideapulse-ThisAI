@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Sparkles, BookOpen, Download, BarChart3, Copy, Check } from "lucide-react";
+import { ChevronLeft, Edit, Maximize2, Share2, Trash2, ArrowUpRight, Code, BarChart3, TrendingUp, Grid3x3, BookOpen, Download, Copy, Check } from "lucide-react";
 import SideNav from "@/components/SideNav";
 import GlowingOrb from "@/components/GlowingOrb";
 import Particles from "@/components/particles";
@@ -19,19 +19,34 @@ interface IdeaData {
   combined_result: string;
   status: string;
   per_tool_results?: ToolResult[];
+  selectedTools?: string[];
 }
 
-// Simple markdown parser for basic formatting
+interface DbIdea {
+  id: string;
+  title: string;
+  original_text?: string;
+  generated_text?: string;
+  description?: string;
+  body?: string;
+  ai_tools_used?: (string | {tool: string; result?: string})[];
+}
+
+
+
+// Enhanced markdown parser for better formatting
 const parseMarkdown = (text: string) => {
   return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-    .replace(/^\* ([^*]+?):(.*)$/gm, '<strong>• $1:</strong>$2') // * Description: format
-    .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-blue-300 mt-6 mb-3">$1</h3>') // H3
-    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-blue-200 mt-8 mb-4">$1</h2>') // H2
-    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-blue-100 mt-8 mb-4">$1</h1>') // H1
-    .replace(/^- (.*$)/gm, '<li class="ml-4 mb-1">• $1</li>') // Bullet points
-    .replace(/\n\n/g, '</p><p class="mb-4">') // Paragraphs
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>') // Bold
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic text-gray-200">$1</em>') // Italic
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-blue-300 mt-6 mb-3 border-b border-gray-700 pb-2">$1</h3>') // H3
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-blue-200 mt-8 mb-4 border-b border-gray-600 pb-2">$1</h2>') // H2
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-blue-100 mt-8 mb-4 border-b border-gray-500 pb-3">$1</h1>') // H1
+    .replace(/^(\s*)\* (.*$)/gm, '<li class="ml-6 mb-2 text-gray-300 relative before:content-[\"•\"] before:text-blue-400 before:absolute before:-left-4">$2</li>') // Bullet points
+    .replace(/^(\s*)\d+\. (.*$)/gm, '<li class="ml-6 mb-2 text-gray-300 list-decimal">$2</li>') // Numbered lists
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-2 py-1 rounded text-cyan-300 font-mono text-sm border border-gray-700">$1</code>') // Inline code
+    .replace(/---+/g, '<hr class="border-gray-600 my-8 border-t-2" />') // Horizontal rule
+    .replace(/\n\s*\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">') // Paragraphs
     .replace(/\n/g, '<br />'); // Line breaks
 };
 
@@ -45,14 +60,42 @@ export default function IdeaPage() {
   const [popup, setPopup] = React.useState<{show: boolean, message: string, type: 'success' | 'error'}>({show: false, message: '', type: 'success'});
 
   React.useEffect(() => {
-    const stored = localStorage.getItem(`idea-${ideaId}`);
-    setIdeaData(stored ? JSON.parse(stored) : null);
-    setLoading(false);
+    const fetchIdeaData = async () => {
+      try {
+        // Fetch from API (skip localStorage to ensure fresh data)
+        const response = await fetch(`http://127.0.0.1:8081/api/ideas`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.ideas) {
+            const idea = data.ideas.find((i: DbIdea) => i.id === ideaId);
+            if (idea) {
+              setIdeaData({
+                idea_id: idea.id,
+                title: idea.title,
+                description: idea.original_text || '',
+                combined_result: idea.generated_text || '',
+                status: 'completed',
+                per_tool_results: idea.ai_tools_used ? (Array.isArray(idea.ai_tools_used) ? idea.ai_tools_used.map((tool: string | {tool: string; result?: string}) => ({
+                  tool: typeof tool === 'string' ? tool : tool.tool || 'unknown',
+                  result: typeof tool === 'object' ? tool.result || 'No details available' : 'Tool used'
+                })) : []) : []
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch idea:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIdeaData();
   }, [ideaId]);
 
   if (loading || !ideaData) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
         <div className="text-center">
           {loading ? (
             <div className="animate-spin w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -82,9 +125,18 @@ export default function IdeaPage() {
     }
   };
 
+  const aiTools = [
+    { name: 'Expand', icon: Maximize2 },
+    { name: 'Summarize', icon: Grid3x3 },
+    { name: 'Use Cases', icon: Grid3x3 },
+    { name: 'Tech Stack', icon: Code },
+    { name: 'Market Fit', icon: BarChart3 },
+    { name: 'Roadmap', icon: TrendingUp }
+  ];
+
   return (
-    <div className="min-h-screen bg-black text-white relative">
-      {/* Fixed Background Elements */}
+    <div className="min-h-screen bg-gray-950 text-gray-100 relative">
+      {/* Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 flex items-center justify-center md:ml-52">
           <GlowingOrb />
@@ -93,190 +145,344 @@ export default function IdeaPage() {
       </div>
       
       <SideNav />
-      
-      <div className="ml-0 md:ml-52 p-4 md:p-8 relative z-10">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <button
+      {/* Header */}
+      <header className="border-b border-gray-800 px-6 py-4 ml-0 md:ml-52">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center gap-4">
+            <button 
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors group"
+              className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              Back to Create
+              <ChevronLeft className="w-5 h-5" />
+              <span className="font-medium">Back</span>
             </button>
-            
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-500/20 rounded-xl border border-blue-500/30">
-                  <Sparkles className="w-6 h-6 text-blue-400" />
-                </div>
-                <div className="flex-1">
-                  <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 leading-tight">
-                    {ideaData.title}
-                  </h1>
-                  <div className="flex items-center gap-4 text-sm text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <BookOpen className="w-4 h-4" />
-                      Generated Idea
-                    </span>
-                    <span>•</span>
-                    <span>ID: {ideaId.slice(0, 8)}...</span>
-                    <span>•</span>
-                    <span suppressHydrationWarning>{new Date().toLocaleDateString()}</span>
-                  </div>
-                </div>
+            <span className="text-gray-600">|</span>
+            <h1 className="text-xl font-semibold text-gray-300">Idea Details</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+              <Edit className="w-5 h-5 text-gray-400" />
+            </button>
+            <button 
+              onClick={copyToClipboard}
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-gray-400" />}
+            </button>
+            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+              <Share2 className="w-5 h-5 text-gray-400" />
+            </button>
+            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+              <Trash2 className="w-5 h-5 text-red-400" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-6 py-8 ml-0 md:ml-52">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Title and Metadata */}
+            <div>
+              <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
+                {ideaData.title}
+              </h2>
+              <p className="text-sm text-gray-500">
+                Created: {new Date().toLocaleDateString()} | Last Updated: {new Date().toLocaleDateString()}
+              </p>
+            </div>
+
+            {/* Original Description */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Original Description</h3>
+              <div className="prose prose-invert max-w-none">
+                <p className="text-gray-300 leading-relaxed mb-4">
+                  {ideaData.description || 'No original description available.'}
+                </p>
+              </div>
+            </div>
+
+            {/* AI-Enhanced Content */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">AI-Enhanced Content</h3>
+              <div className="prose prose-invert max-w-none">
+                {ideaData.combined_result ? (
+                  <div 
+                    className="text-gray-300 leading-relaxed prose prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ 
+                      __html: '<p class="mb-4 text-gray-300 leading-relaxed">' + parseMarkdown(ideaData.combined_result) + '</p>'
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-400 italic">No AI-enhanced content available.</p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Generated Content */}
-          <div className="glass-card relative">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-400" />
-                Generated Content
-              </h2>
-              <button
-                onClick={copyToClipboard}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-slate-700/50 hover:bg-slate-600/50 rounded-lg transition-colors border border-slate-600/50"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-green-400" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy
-                  </>
-                )}
-              </button>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Metadata Card */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Metadata</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Status</p>
+                    <span className="px-3 py-1 bg-green-900/30 text-green-400 rounded-full text-sm font-medium border border-green-800 inline-block">
+                      {ideaData.status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">AI Tools</p>
+                    <p className="text-white font-medium">
+                      {ideaData.per_tool_results?.length || ideaData.selectedTools?.length || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div className="prose prose-invert prose-lg max-w-none">
-              <div 
-                className="text-slate-100 leading-relaxed text-base md:text-lg"
-                dangerouslySetInnerHTML={{ 
-                  __html: `<p class="mb-4">${parseMarkdown(ideaData.combined_result)}</p>` 
-                }}
-              />
-            </div>
-          </div>
 
-          {/* Actions */}
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <button 
-              onClick={async () => {
-                try {
-                  const response = await fetch('http://127.0.0.1:8081/api/ai/save-to-vault', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      title: ideaData.title,
-                      content: ideaData.description,
-                      creator_id: 'user123',
-                      snapshots: ideaData.per_tool_results?.map((result: ToolResult) => ({
-                        tool: result.tool,
-                        content: result.result
-                      })) || []
-                    })
-                  });
-                  
-                  const data = await response.json();
-                  
-                  if (data.success) {
-                    const message = `Idea saved successfully! ${data.snapshots_saved} snapshots saved` + 
-                      (data.snapshots_failed > 0 ? `, ${data.snapshots_failed} failed` : '');
-                    setPopup({show: true, message, type: 'success'});
-                  } else {
-                    setPopup({show: true, message: `Save failed: ${data.error || 'Unknown error'}`, type: 'error'});
-                  }
-                } catch {
-                  setPopup({show: true, message: 'Failed to save to vault. Please try again.', type: 'error'});
-                }
-              }}
-              className="action-btn bg-blue-600 hover:bg-blue-500 group"
-            >
-              <BookOpen className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span>Save to Vault</span>
-            </button>
-            <button className="action-btn bg-slate-700 hover:bg-slate-600 group">
-              <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span>Export PDF</span>
-            </button>
-            <button 
-              onClick={() => router.push('/analyzer')}
-              className="action-btn bg-purple-600 hover:bg-purple-500 group"
-            >
-              <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span>Analyze Idea</span>
-            </button>
+            {/* AI Tools Used */}
+            {ideaData.per_tool_results && ideaData.per_tool_results.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">AI Tools Used</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {ideaData.per_tool_results.map((result, index) => {
+                    const getToolColor = (tool: string) => {
+                      switch (tool) {
+                        case 'expand':
+                          return 'text-green-400 bg-green-400/10 border-green-400/20';
+                        case 'technical':
+                          return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
+                        case 'market_positioning':
+                        case 'market':
+                          return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
+                        case 'use_cases':
+                          return 'text-pink-400 bg-pink-400/10 border-pink-400/20';
+                        case 'roadmap':
+                          return 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
+                        case 'summarize':
+                          return 'text-violet-400 bg-violet-400/10 border-violet-400/20';
+                        default:
+                          return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
+                      }
+                    };
+
+                    const getToolEmoji = (tool: string) => {
+                      switch (tool) {
+                        case 'expand':
+                          return '🔍';
+                        case 'technical':
+                          return '⚙️';
+                        case 'market_positioning':
+                        case 'market':
+                          return '📊';
+                        case 'use_cases':
+                          return '💡';
+                        case 'roadmap':
+                          return '🗺️';
+                        case 'summarize':
+                          return '📝';
+                        default:
+                          return '🔧';
+                      }
+                    };
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-colors ${getToolColor(result.tool)}`}
+                      >
+                        <span className="text-lg mb-1">{getToolEmoji(result.tool)}</span>
+                        <span className="text-xs font-medium capitalize">
+                          {result.tool}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Tool Results */}
+            {ideaData.per_tool_results && ideaData.per_tool_results.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Tool Results</h3>
+                <div className="space-y-4">
+                  {ideaData.per_tool_results.map((result, index) => (
+                    <div key={index} className="border-b border-gray-800 pb-4 last:border-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Grid3x3 className="w-4 h-4 text-blue-400" />
+                          <span className="text-sm font-medium text-white capitalize">{result.tool}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-400 mb-2 line-clamp-2">
+                        {result.result.substring(0, 100)}...
+                      </p>
+                      <button className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                        View Full Result
+                        <ArrowUpRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-6">Quick Actions</h3>
+              <div className="space-y-4">
+                <button 
+                  onClick={async () => {
+                    try {
+                      const requestBody = {
+                        title: ideaData.title,
+                        original_text: ideaData.description,
+                        generated_text: ideaData.combined_result,
+                        creator_id: null,
+                        is_draft: false,
+                        is_ai_generated: true,
+                        ai_tools_used: ideaData.per_tool_results?.map((result: ToolResult) => ({
+                          tool: result.tool,
+                          result: result.result
+                        })) || ideaData.selectedTools?.map(tool => ({
+                          tool,
+                          result: 'Tool selected but no detailed results available'
+                        })) || []
+                      };
+                      
+                      const response = await fetch('http://127.0.0.1:8081/api/ideas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                      });
+                      
+                      const responseText = await response.text();
+                      let data;
+                      try {
+                        data = responseText ? JSON.parse(responseText) : {};
+                      } catch {
+                        data = { error: 'Invalid JSON response', raw: responseText };
+                      }
+                      
+                      if (response.ok && data.success && data.idea?.id) {
+                        const toolsCount = ideaData.per_tool_results?.length || ideaData.selectedTools?.length || 0;
+                        const message = `Idea saved successfully to database! ${toolsCount} AI tools recorded.`;
+                        setPopup({show: true, message, type: 'success'});
+                      } else {
+                        const errorMsg = data.error || data.message || data.details || responseText || `HTTP ${response.status}: ${response.statusText}`;
+                        setPopup({show: true, message: `Save failed: ${errorMsg}`, type: 'error'});
+                      }
+                    } catch {
+                      setPopup({show: true, message: 'Backend server not available. Please check if the server is running on port 8081.', type: 'error'});
+                    }
+                  }}
+                  className="group w-full flex items-center justify-between p-4 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                      <BookOpen className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-sm text-white font-semibold block">Save to Vault</span>
+                      <span className="text-xs text-blue-100 opacity-80">Store in your collection</span>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    try {
+                      // Create DOC content with proper formatting
+                      const docContent = `${ideaData.title || 'Untitled Idea'}\n\n` +
+                        `Original Description:\n${ideaData.description || 'No description available'}\n\n` +
+                        `AI-Enhanced Content:\n${ideaData.combined_result || 'No content available'}\n\n` +
+                        `AI Tools Used:\n${ideaData.per_tool_results?.map(result => `• ${result.tool || 'Unknown tool'}`).join('\n') || 'None'}\n\n` +
+                        `---\nGenerated by IdeaPulse`;
+                      
+                      // Create blob with DOC MIME type
+                      const blob = new Blob([docContent], { 
+                        type: 'application/msword' 
+                      });
+                      
+                      // Create download link
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${(ideaData.title || 'untitled_idea').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.doc`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      
+                      setPopup({show: true, message: 'DOC file exported successfully!', type: 'success'});
+                    } catch (error) {
+                      console.error('DOC export failed:', error);
+                      setPopup({show: true, message: 'DOC export failed. Please try again.', type: 'error'});
+                    }
+                  }}
+                  className="group w-full flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all duration-200 border border-gray-700 hover:border-gray-600"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-700 rounded-lg group-hover:bg-gray-600 transition-colors">
+                      <Download className="w-5 h-5 text-gray-300" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-sm text-gray-200 font-semibold block">Export DOC</span>
+                      <span className="text-xs text-gray-400">Download as Word document</span>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                </button>
+                
+                <button 
+                  onClick={() => router.push('/analyzer')}
+                  className="group w-full flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all duration-200 border border-gray-700 hover:border-gray-600"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-700 rounded-lg group-hover:bg-gray-600 transition-colors">
+                      <BarChart3 className="w-5 h-5 text-gray-300" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-sm text-gray-200 font-semibold block">Analyze Further</span>
+                      <span className="text-xs text-gray-400">Deep dive analysis</span>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                </button>
+              </div>
+            </div>
           </div>
-          
-          {/* Bottom Spacing */}
-          <div className="h-16"></div>
         </div>
       </div>
 
       {/* Popup */}
       {popup.show && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setPopup({...popup, show: false})}>
-          <div className={`glass-card max-w-md mx-4 ${popup.type === 'success' ? 'border-green-500/30' : 'border-red-500/30'}`} onClick={e => e.stopPropagation()}>
+          <div className={`bg-gray-900 border max-w-md mx-4 rounded-xl p-6 ${popup.type === 'success' ? 'border-green-500/30' : 'border-red-500/30'}`} onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               {popup.type === 'success' ? (
                 <Check className="w-6 h-6 text-green-400" />
               ) : (
                 <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-bold">!</div>
               )}
-              <h3 className="text-lg font-semibold">{popup.type === 'success' ? 'Success' : 'Error'}</h3>
+              <h3 className="text-lg font-semibold text-white">{popup.type === 'success' ? 'Success' : 'Error'}</h3>
             </div>
-            <p className="text-slate-300 mb-6">{popup.message}</p>
+            <p className="text-gray-300 mb-6">{popup.message}</p>
             <button 
               onClick={() => setPopup({...popup, show: false})}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition"
+              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition text-white"
             >
               Close
             </button>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .glass-card {
-          background: rgba(15, 23, 42, 0.8);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(148, 163, 184, 0.1);
-          border-radius: 1.5rem;
-          padding: 2rem;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        
-        .action-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.75rem;
-          padding: 1rem 1.5rem;
-          border-radius: 1rem;
-          transition: all 0.2s ease;
-          font-weight: 500;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .action-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-        
-        @media (max-width: 768px) {
-          .glass-card {
-            padding: 1.5rem;
-            border-radius: 1rem;
-          }
-        }
-      `}</style>
     </div>
   );
 }
