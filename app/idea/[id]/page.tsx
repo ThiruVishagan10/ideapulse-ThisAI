@@ -135,7 +135,7 @@ export default function IdeaPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-gray-100 relative overflow-hidden">
       {/* Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 flex items-center justify-center md:ml-52">
@@ -146,76 +146,110 @@ export default function IdeaPage() {
       
       <SideNav />
       {/* Header */}
-      <header className="border-b border-gray-800 px-6 py-4 ml-0 md:ml-52">
+      <header className="border-b border-gray-700/50 backdrop-blur-xl bg-gray-900/60 px-6 py-6 ml-0 md:ml-52 shadow-2xl">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <button 
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
+              className="flex items-center gap-3 text-gray-400 hover:text-white transition-all duration-200 group"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <div className="p-2 bg-gray-800/60 group-hover:bg-gray-700/60 rounded-lg transition-colors">
+                <ChevronLeft className="w-5 h-5" />
+              </div>
               <span className="font-medium">Back</span>
             </button>
-            <span className="text-gray-600">|</span>
-            <h1 className="text-xl font-semibold text-gray-300">Idea Details</h1>
+            <div className="w-px h-6 bg-gray-600" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <BookOpen className="w-5 h-5 text-blue-400" />
+              </div>
+              <h1 className="text-xl font-bold text-white">Idea Details</h1>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <Edit className="w-5 h-5 text-gray-400" />
+          <div className="flex items-center gap-2">
+            <button className="p-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group">
+              <Edit className="w-5 h-5 text-gray-400 group-hover:text-blue-400" />
             </button>
             <button 
               onClick={copyToClipboard}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="p-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group"
             >
-              {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-gray-400" />}
+              {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-gray-400 group-hover:text-green-400" />}
             </button>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <Share2 className="w-5 h-5 text-gray-400" />
+            <button className="p-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group">
+              <Share2 className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
             </button>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <Trash2 className="w-5 h-5 text-red-400" />
+            <button className="p-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group">
+              <Trash2 className="w-5 h-5 text-gray-400 group-hover:text-red-400" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 ml-0 md:ml-52">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-6 py-8 ml-0 md:ml-52 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Title and Metadata */}
-            <div>
-              <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-                {ideaData.title}
-              </h2>
-              <p className="text-sm text-gray-500">
-                Created: {new Date().toLocaleDateString()} | Last Updated: {new Date().toLocaleDateString()}
-              </p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-2xl p-8 border border-blue-500/30 backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full -translate-y-16 translate-x-16" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full border border-green-500/30">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block mr-2" />
+                    Active
+                  </div>
+                </div>
+                <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
+                  {ideaData.title}
+                </h2>
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                  <span>Created: {new Date().toLocaleDateString()}</span>
+                  <div className="w-1 h-1 bg-gray-600 rounded-full" />
+                  <span>Last Updated: {new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
             </div>
 
             {/* Original Description */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-4">Original Description</h3>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 leading-relaxed mb-4">
+            <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-8 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-orange-500/20 rounded-lg">
+                  <Edit className="w-5 h-5 text-orange-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Original Description</h3>
+              </div>
+              <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-700/30">
+                <p className="text-gray-300 leading-relaxed text-sm">
                   {ideaData.description || 'No original description available.'}
                 </p>
               </div>
             </div>
 
             {/* AI-Enhanced Content */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-4">AI-Enhanced Content</h3>
-              <div className="prose prose-invert max-w-none">
+            <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-8 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white">AI-Enhanced Content</h3>
+                <div className="ml-auto px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-semibold rounded-full border border-purple-500/30">
+                  AI Generated
+                </div>
+              </div>
+              <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-700/30">
                 {ideaData.combined_result ? (
                   <div 
-                    className="text-gray-300 leading-relaxed prose prose-invert max-w-none"
+                    className="text-gray-300 leading-relaxed prose prose-invert max-w-none text-sm"
                     dangerouslySetInnerHTML={{ 
                       __html: '<p class="mb-4 text-gray-300 leading-relaxed">' + parseMarkdown(ideaData.combined_result) + '</p>'
                     }}
                   />
                 ) : (
-                  <p className="text-gray-400 italic">No AI-enhanced content available.</p>
+                  <p className="text-gray-400 italic text-sm">No AI-enhanced content available.</p>
                 )}
               </div>
             </div>
@@ -224,49 +258,60 @@ export default function IdeaPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Metadata Card */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Metadata</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Status</p>
-                    <span className="px-3 py-1 bg-green-900/30 text-green-400 rounded-full text-sm font-medium border border-green-800 inline-block">
+            <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-cyan-500/20 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Project Metrics</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/30">
+                  <p className="text-xs text-gray-500 mb-2">Status</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <span className="text-green-400 text-sm font-semibold capitalize">
                       {ideaData.status}
                     </span>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">AI Tools</p>
-                    <p className="text-white font-medium">
-                      {ideaData.per_tool_results?.length || ideaData.selectedTools?.length || 0}
-                    </p>
-                  </div>
+                </div>
+                <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/30">
+                  <p className="text-xs text-gray-500 mb-2">AI Tools</p>
+                  <p className="text-white text-lg font-bold">
+                    {ideaData.per_tool_results?.length || ideaData.selectedTools?.length || 0}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* AI Tools Used */}
             {ideaData.per_tool_results && ideaData.per_tool_results.length > 0 && (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">AI Tools Used</h3>
-                <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-indigo-500/20 rounded-lg">
+                    <Code className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white">AI Tools Arsenal</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   {ideaData.per_tool_results.map((result, index) => {
                     const getToolColor = (tool: string) => {
                       switch (tool) {
                         case 'expand':
-                          return 'text-green-400 bg-green-400/10 border-green-400/20';
+                          return 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400';
                         case 'technical':
-                          return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
+                          return 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30 text-cyan-400';
                         case 'market_positioning':
                         case 'market':
-                          return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
+                          return 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400';
                         case 'use_cases':
-                          return 'text-pink-400 bg-pink-400/10 border-pink-400/20';
+                          return 'from-pink-500/20 to-pink-600/20 border-pink-500/30 text-pink-400';
                         case 'roadmap':
-                          return 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
+                          return 'from-indigo-500/20 to-indigo-600/20 border-indigo-500/30 text-indigo-400';
                         case 'summarize':
-                          return 'text-violet-400 bg-violet-400/10 border-violet-400/20';
+                          return 'from-violet-500/20 to-violet-600/20 border-violet-500/30 text-violet-400';
                         default:
-                          return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
+                          return 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30 text-emerald-400';
                       }
                     };
 
@@ -293,12 +338,17 @@ export default function IdeaPage() {
                     return (
                       <div
                         key={index}
-                        className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-colors ${getToolColor(result.tool)}`}
+                        className={`relative overflow-hidden bg-gradient-to-br ${getToolColor(result.tool)} rounded-xl p-4 border hover:scale-105 transition-all duration-200 group`}
                       >
-                        <span className="text-lg mb-1">{getToolEmoji(result.tool)}</span>
-                        <span className="text-xs font-medium capitalize">
-                          {result.tool}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{getToolEmoji(result.tool)}</span>
+                          <div>
+                            <span className="text-sm font-semibold capitalize block">
+                              {result.tool}
+                            </span>
+                            <span className="text-xs opacity-80">AI Tool</span>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
@@ -308,23 +358,31 @@ export default function IdeaPage() {
 
             {/* Tool Results */}
             {ideaData.per_tool_results && ideaData.per_tool_results.length > 0 && (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Tool Results</h3>
-                <div className="space-y-4">
+              <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-yellow-500/20 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white">Analysis Results</h3>
+                </div>
+                <div className="space-y-3">
                   {ideaData.per_tool_results.map((result, index) => (
-                    <div key={index} className="border-b border-gray-800 pb-4 last:border-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Grid3x3 className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm font-medium text-white capitalize">{result.tool}</span>
+                    <div key={index} className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 group">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full" />
+                          <span className="text-sm font-semibold text-white capitalize">{result.tool}</span>
+                        </div>
+                        <div className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded">
+                          Complete
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400 mb-2 line-clamp-2">
-                        {result.result.substring(0, 100)}...
+                      <p className="text-xs text-gray-400 mb-3 line-clamp-2">
+                        {result.result.substring(0, 120)}...
                       </p>
-                      <button className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                        View Full Result
-                        <ArrowUpRight className="w-3 h-3" />
+                      <button className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 group-hover:gap-2">
+                        View Details
+                        <ArrowUpRight className="w-3 h-3 transition-all" />
                       </button>
                     </div>
                   ))}
@@ -333,9 +391,14 @@ export default function IdeaPage() {
             )}
 
             {/* Actions */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-6">Quick Actions</h3>
-              <div className="space-y-4">
+            <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <Download className="w-5 h-5 text-green-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Quick Actions</h3>
+              </div>
+              <div className="space-y-3">
                 <button 
                   onClick={async () => {
                     try {
@@ -381,7 +444,7 @@ export default function IdeaPage() {
                       setPopup({show: true, message: 'Backend server not available. Please check if the server is running on port 8081.', type: 'error'});
                     }
                   }}
-                  className="group w-full flex items-center justify-between p-4 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+                  className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
@@ -392,7 +455,7 @@ export default function IdeaPage() {
                       <span className="text-xs text-blue-100 opacity-80">Store in your collection</span>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
+                  <ArrowUpRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:scale-110 transition-all" />
                 </button>
                 
                 <button 
@@ -426,34 +489,34 @@ export default function IdeaPage() {
                       setPopup({show: true, message: 'DOC export failed. Please try again.', type: 'error'});
                     }
                   }}
-                  className="group w-full flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all duration-200 border border-gray-700 hover:border-gray-600"
+                  className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 rounded-xl transition-all duration-200 shadow-lg hover:shadow-green-500/25"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-700 rounded-lg group-hover:bg-gray-600 transition-colors">
-                      <Download className="w-5 h-5 text-gray-300" />
+                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                      <Download className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
-                      <span className="text-sm text-gray-200 font-semibold block">Export DOC</span>
-                      <span className="text-xs text-gray-400">Download as Word document</span>
+                      <span className="text-sm text-white font-semibold block">Export DOC</span>
+                      <span className="text-xs text-green-100 opacity-80">Download as Word document</span>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                  <ArrowUpRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:scale-110 transition-all" />
                 </button>
                 
                 <button 
                   onClick={() => router.push('/analyzer')}
-                  className="group w-full flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all duration-200 border border-gray-700 hover:border-gray-600"
+                  className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl transition-all duration-200 shadow-lg hover:shadow-purple-500/25"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-700 rounded-lg group-hover:bg-gray-600 transition-colors">
-                      <BarChart3 className="w-5 h-5 text-gray-300" />
+                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                      <BarChart3 className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
-                      <span className="text-sm text-gray-200 font-semibold block">Analyze Further</span>
-                      <span className="text-xs text-gray-400">Deep dive analysis</span>
+                      <span className="text-sm text-white font-semibold block">Analyze Further</span>
+                      <span className="text-xs text-purple-100 opacity-80">Deep dive analysis</span>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                  <ArrowUpRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:scale-110 transition-all" />
                 </button>
               </div>
             </div>
@@ -461,22 +524,24 @@ export default function IdeaPage() {
         </div>
       </div>
 
-      {/* Popup */}
+      {/* Enhanced Popup */}
       {popup.show && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setPopup({...popup, show: false})}>
-          <div className={`bg-gray-900 border max-w-md mx-4 rounded-xl p-6 ${popup.type === 'success' ? 'border-green-500/30' : 'border-red-500/30'}`} onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              {popup.type === 'success' ? (
-                <Check className="w-6 h-6 text-green-400" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-bold">!</div>
-              )}
-              <h3 className="text-lg font-semibold text-white">{popup.type === 'success' ? 'Success' : 'Error'}</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setPopup({...popup, show: false})}>
+          <div className={`bg-gray-900/95 backdrop-blur-xl border max-w-md mx-4 rounded-2xl p-8 shadow-2xl ${popup.type === 'success' ? 'border-green-500/30' : 'border-red-500/30'}`} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className={`p-3 rounded-xl ${popup.type === 'success' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                {popup.type === 'success' ? (
+                  <Check className="w-6 h-6 text-green-400" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-bold">!</div>
+                )}
+              </div>
+              <h3 className="text-xl font-bold text-white">{popup.type === 'success' ? 'Success!' : 'Error'}</h3>
             </div>
-            <p className="text-gray-300 mb-6">{popup.message}</p>
+            <p className="text-gray-300 mb-8 leading-relaxed">{popup.message}</p>
             <button 
               onClick={() => setPopup({...popup, show: false})}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition text-white"
+              className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${popup.type === 'success' ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white shadow-lg hover:shadow-green-500/25' : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg hover:shadow-red-500/25'}`}
             >
               Close
             </button>

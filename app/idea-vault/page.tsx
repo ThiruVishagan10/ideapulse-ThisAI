@@ -18,15 +18,16 @@ interface Idea {
 interface DbIdea {
   id: string;
   title: string;
-  body?: string;
-  description?: string;
   original_text?: string;
   generated_text?: string;
-  is_draft: boolean;
-  is_ai_generated?: boolean;
+  description?: string;
   creator_id?: string;
-  created_at?: string;
+  tags?: string[];
+  is_draft?: boolean;
+  is_ai_generated?: boolean;
   ai_tools_used?: string[] | string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const IdeaVault: React.FC = () => {
@@ -34,76 +35,20 @@ const IdeaVault: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('All Ideas');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [ideas, setIdeas] = useState<Idea[]>([
+    { id: '1', title: 'Smart Home Energy Grid', description: 'AI-powered energy optimization system that learns from usage patterns', category: 'AI Generated', tools: ['expand', 'technical', 'market_positioning'] },
+    { id: '2', title: 'Personalized Learning Platform', description: 'Adaptive e-learning system with AI tutoring', category: 'Draft', tools: ['use_cases', 'roadmap'] },
+    { id: '3', title: 'AR Shopping Assistant', description: 'Augmented reality app for enhanced retail experience', category: 'AI Generated', tools: ['expand', 'technical'] },
+    { id: '4', title: 'Fitness Gamification App', description: 'Team-based wellness challenges with rewards', category: 'Draft', tools: ['summarize'] }
+  ]);
+  const [loading, setLoading] = useState(false);
 
   const filters = ['All Ideas', 'Favorites', 'High Potential', 'Drafts', 'AI Generated'];
 
-  // const ideas: Idea[] = [
-  //   { id: 1, title: 'Smart Home Energy Grid', description: 'AI-powered energy optimization', category: 'AI Generated' },
-  //   { id: 2, title: 'Personalized Learning Platform', description: 'Adaptive e-learning system', category: 'Manual' },
-  //   { id: 3, title: 'AR Shopping Assistant', description: 'Augmented reality for retail', category: 'High Potential' },
-  //   { id: 4, title: 'Fitness Gamification App', description: 'Team-based wellness challenges', category: 'Draft' },
-  //   { id: 5, title: 'AI Code Reviewer', description: 'Automated code analysis tool', category: 'AI Generated' },
-  //   { id: 6, title: 'Sustainable Packaging Hub', description: 'B2B eco-friendly materials', category: 'Manual' },
-  //   { id: 7, title: 'Mental Health Tracker', description: 'Daily mood and wellness logging', category: 'Draft' },
-  //   { id: 8, title: 'Smart Recipe Generator', description: 'AI-based meal planning', category: 'AI Generated' }
-  // ];
-
-  React.useEffect(() => {
-    const fetchIdeas = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8081/api/ideas');
-        
-        if (response.status === 404) {
-          throw new Error('API endpoint not found');
-        }
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Response is not JSON');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success && data.ideas) {
-          setIdeas(data.ideas.map((idea: DbIdea) => ({
-            id: idea.id,
-            title: idea.title,
-            description: idea.body || idea.description || '',
-            original_text: idea.original_text,
-            category: idea.is_draft ? 'Draft' : (idea.is_ai_generated ? 'AI Generated' : 'Manual'),
-            tools: Array.isArray(idea.ai_tools_used) ? idea.ai_tools_used : 
-                   (typeof idea.ai_tools_used === 'string' ? JSON.parse(idea.ai_tools_used) : [])
-          })));
-        } else {
-          throw new Error(data.error || 'Failed to fetch ideas');
-        }
-      } catch (error) {
-        console.error('Failed to fetch ideas:', error);
-        // Use fallback data when API is not available
-        setIdeas([
-          { id: '1', title: 'Smart Home Energy Grid', description: 'AI-powered energy optimization system that learns from usage patterns', category: 'AI Generated', tools: ['expand', 'technical', 'market_positioning'] },
-          { id: '2', title: 'Personalized Learning Platform', description: 'Adaptive e-learning system with AI tutoring', category: 'Draft', tools: ['use_cases', 'roadmap'] },
-          { id: '3', title: 'AR Shopping Assistant', description: 'Augmented reality app for enhanced retail experience', category: 'AI Generated', tools: ['expand', 'technical'] },
-          { id: '4', title: 'Fitness Gamification App', description: 'Team-based wellness challenges with rewards', category: 'Draft', tools: ['summarize'] }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchIdeas();
-  }, []);
-
   // Filter and search ideas
   const filteredIdeas = ideas.filter(idea => {
-    const matchesSearch = idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         idea.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (idea.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                         (idea.description?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesFilter = activeFilter === 'All Ideas' || 
                          (activeFilter === 'Drafts' && idea.category === 'Draft') ||
                          (activeFilter === 'AI Generated' && idea.category === 'AI Generated');

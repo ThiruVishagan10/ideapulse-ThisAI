@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SideNav from "@/components/SideNav";
 import GlowingOrb from "@/components/GlowingOrb";
@@ -16,30 +14,38 @@ interface ActionCard {
 }
 
 interface IdeaCard {
+  id: string;
   title: string;
   description: string;
   tag: string;
+  created_at?: string;
 }
 
 export default function Dashboard() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-
-      if (!user) {
-        router.push("/auth/login");
-      }
-    };
-    getUser();
-  }, [router]);
+  const [recentIdeas] = useState<IdeaCard[]>([
+    {
+      id: '1',
+      title: 'Smart Home Energy System',
+      description: 'AI-powered energy management system that optimizes household energy consumption and integrates with renewable sources.',
+      tag: 'AI Generated',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: '2', 
+      title: 'Sustainable Food Delivery',
+      description: 'Eco-friendly food delivery platform using electric vehicles and biodegradable packaging.',
+      tag: 'Manual',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: '3',
+      title: 'Virtual Reality Learning',
+      description: 'Immersive VR platform for educational content delivery and interactive learning experiences.',
+      tag: 'AI Generated',
+      created_at: new Date().toISOString()
+    }
+  ]);
 
   const actionCards: ActionCard[] = [
     {
@@ -59,56 +65,7 @@ export default function Dashboard() {
     },
   ];
 
-  const recentIdeas: IdeaCard[] = [
-    {
-      title: "Personalized Learning Paths",
-      description:
-        "An adaptive e-learning platform that curates content for individual student needs.",
-      tag: "AI",
-    },
-    {
-      title: "Smart Home Energy Grid",
-      description:
-        "A system to optimize household energy consumption based on usage patterns and grid demand.",
-      tag: "IoT",
-    },
-    {
-      title: "AR Shopping Assistant",
-      description:
-        "Visualize furniture and decor in your own space before you buy using augmented reality.",
-      tag: "AR/VR",
-    },
-    {
-      title: "Gamified Fitness App for Teams",
-      description:
-        "Corporate wellness app that encourages physical activity through team challenges and leaderboards.",
-      tag: "Health",
-    },
-    {
-      title: "AI-Powered Code Reviewer",
-      description:
-        "An intelligent tool that automatically reviews code for bugs, style, and performance issues.",
-      tag: "AI",
-    },
-    {
-      title: "Sustainable Packaging Marketplace",
-      description:
-        "A B2B platform connecting businesses with suppliers of eco-friendly packaging materials.",
-      tag: "E-commerce",
-    },
-  ];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -122,8 +79,7 @@ export default function Dashboard() {
           {/* Header */}
           <div className="mb-8 mt-16 md:mt-0">
             <h1 className="text-4xl font-bold mb-2">
-              Welcome back,{" "}
-              {user.user_metadata?.full_name || user.email?.split("@")[0]}
+              Welcome to IdeaPulse
             </h1>
             <p className="text-gray-400">What do you want to create today?</p>
           </div>
@@ -170,9 +126,10 @@ export default function Dashboard() {
           <div>
             <h2 className="text-2xl font-bold mb-6">Recent Ideas</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recentIdeas.map((idea, index) => (
+              {recentIdeas.length > 0 ? recentIdeas.map((idea) => (
                 <div
-                  key={index}
+                  key={idea.id}
+                  onClick={() => router.push(`/idea/${idea.id}`)}
                   className="group relative backdrop-blur-md rounded-3xl p-6 cursor-pointer overflow-hidden transition-all duration-300 hover:scale-[1.02] border border-white/20"
                   style={{
                     backgroundColor: "rgba(22, 33, 53, 0.7)",
@@ -210,7 +167,11 @@ export default function Dashboard() {
                     </span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-400">No recent ideas found. Start creating your first idea!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

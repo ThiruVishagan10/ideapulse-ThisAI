@@ -50,96 +50,43 @@ const CreateIdeaForm = () => {
   };
 
   const generateContent = async () => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch('http://127.0.0.1:8081/api/ai/multi-tools', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: description,
-          tools: selectedTools,
-          mode: 'sync'
-        })
-      });
-
-      const data = await response.json();
-      
-      const resultData = {
-        idea_id: 'temp-' + Date.now(),
-        status: data.status,
-        per_tool_results: data.per_tool_results,
-        combined_result: data.combined_result,
-        title,
-        description
-      };
-      
-      setResult(resultData);
-      setIdeaId(resultData.idea_id);
-      
-      // Store and navigate to new page
-      localStorage.setItem(`idea-${resultData.idea_id}`, JSON.stringify(resultData));
-      router.push(`/idea/${resultData.idea_id}`);
-      
-    } catch (error) {
-      console.error('Error generating content:', error);
-      
-      // Fallback mock response
-      const mockResult = {
-        idea_id: 'mock-' + Date.now(),
-        status: 'completed',
-        combined_result: `${description}\n\n**Enhanced Features:**\n• AI-powered optimization\n• Real-time analytics\n• User-friendly interface\n• Scalable architecture`,
-        per_tool_results: selectedTools.map(tool => ({
-          tool,
-          result: `Enhanced content for ${tool}`,
-          metadata: { mock: true }
-        })),
-        title,
-        description
-      };
-      
+    setLoading(true);
+    
+    // Mock response for presentation
+    const mockResult = {
+      idea_id: 'demo-' + Date.now(),
+      status: 'completed',
+      combined_result: `${description}\n\n**Enhanced Features:**\n• AI-powered optimization\n• Real-time analytics\n• User-friendly interface\n• Scalable architecture`,
+      per_tool_results: selectedTools.map(tool => ({
+        tool,
+        result: `Enhanced content for ${tool}`,
+        metadata: { demo: true }
+      })),
+      title,
+      description
+    };
+    
+    setTimeout(() => {
       setResult(mockResult);
       setIdeaId(mockResult.idea_id);
-      
-      // Store and navigate to new page
       localStorage.setItem(`idea-${mockResult.idea_id}`, JSON.stringify(mockResult));
       router.push(`/idea/${mockResult.idea_id}`);
-    } finally {
       setLoading(false);
-    }
+    }, 2000);
   };
 
   const saveToVault = async () => {
     if (!result) return;
     
-    try {
-      const response = await fetch('http://127.0.0.1:8081/api/ai/save-to-vault', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content: description,
-          creator_id: 'user123',
-          snapshots: result.per_tool_results.map((toolResult: any) => ({
-            tool: toolResult.tool,
-            content: toolResult.result
-          }))
-        })
-      });
-
-      const data = await response.json();
-      const savedResult = { ...result, idea_id: data.idea_id };
-      
-      setResult(savedResult);
-      setIdeaId(data.idea_id);
-      
-      localStorage.setItem(`idea-${data.idea_id}`, JSON.stringify(savedResult));
-      router.push(`/idea/${data.idea_id}`);
-      
-    } catch (error) {
-      console.error('Error saving to vault:', error);
-      alert('Failed to save to vault. Please try again.');
-    }
+    // Save locally for presentation
+    const localId = 'vault-' + Date.now();
+    const savedResult = { ...result, idea_id: localId };
+    
+    setResult(savedResult);
+    setIdeaId(localId);
+    
+    localStorage.setItem(`idea-${localId}`, JSON.stringify(savedResult));
+    router.push(`/idea/${localId}`);
   };
 
   const handleSaveDraft = async () => {
