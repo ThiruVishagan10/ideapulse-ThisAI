@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch('http://127.0.0.1:8081/api/analyzer/snapshot', {
+    const response = await fetch(`${API_URL}/api/analyzer/snapshot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

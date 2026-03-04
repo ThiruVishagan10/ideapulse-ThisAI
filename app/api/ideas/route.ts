@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.AI_API_URL || 'https://127.0.0.1:8081';
+const API_URL = process.env.API_URL || 'http://localhost:3001';
 
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ideas`);
+    const response = await fetch(`${API_URL}/api/ideas`);
     
     if (!response.ok) {
       console.error(`API error: ${response.status} ${response.statusText}`);
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/api/ideas`, {
+    const response = await fetch(`${API_URL}/api/ideas`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

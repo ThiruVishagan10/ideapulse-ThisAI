@@ -4,13 +4,18 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Particles from './particles';
+import { authService } from '@/lib/auth';
 
 export default function HeroSection() {
   const router = useRouter();
 
   useEffect(() => {
     const handleKeyPress = () => {
-      router.push('/dashboard');
+      if (authService.isAuthenticated()) {
+        router.push('/dashboard');
+      } else {
+        router.push('/auth/login');
+      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
@@ -69,7 +74,13 @@ export default function HeroSection() {
             whileHover={{ scale: 1.05, boxShadow: "0 0 20px #7f7f7f" }}
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2, repeat: Infinity }}
-            onClick={() => router.push('/dashboard')}>
+            onClick={() => {
+              if (authService.isAuthenticated()) {
+                router.push('/dashboard');
+              } else {
+                router.push('/auth/login');
+              }
+            }}>
               Press Any Key to Continue →
           </motion.div>
         </motion.div>

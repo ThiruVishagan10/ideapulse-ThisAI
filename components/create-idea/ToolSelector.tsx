@@ -1,15 +1,15 @@
 "use client";
 
 import React from "react";
-import { Wand2, Brain, Grid3x3, Code, Target, TrendingUp } from "lucide-react";
+import { Wand2, Brain, Sparkles, Type, FileText, Tag } from "lucide-react";
 
 const TOOL_LIST = [
-  { key: "expand", label: "Expand Idea", icon: Wand2 },
-  { key: "summarize", label: "Summarize", icon: Brain },
-  { key: "use_cases", label: "Add Use Cases", icon: Grid3x3 },
-  { key: "technical", label: "Make Technical", icon: Code },
-  { key: "market_positioning", label: "Market Positioning", icon: Target },
-  { key: "roadmap", label: "Generate Roadmap", icon: TrendingUp },
+  { key: "REFINE", label: "Refine", icon: Wand2 },
+  { key: "EXPAND", label: "Expand", icon: Brain },
+  { key: "SUMMARIZE", label: "Summarize", icon: FileText },
+  { key: "TONE", label: "Adjust Tone", icon: Type },
+  { key: "STRUCTURE", label: "Structure", icon: Sparkles },
+  { key: "GENERATE_TAGS", label: "Generate Tags", icon: Tag },
 ];
 
 interface ToolSelectorProps {

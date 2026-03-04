@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ job_id: string }> }
@@ -7,7 +9,7 @@ export async function GET(
   try {
     const { job_id } = await params;
     
-    const response = await fetch(`http://127.0.0.1:8081/api/analyzer/job/${job_id}/result`);
+    const response = await fetch(`${API_URL}/api/analyzer/job/${job_id}/result`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

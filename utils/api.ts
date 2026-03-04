@@ -1,5 +1,7 @@
-export async function fastAPI(path: string, body: unknown) {
-  const res = await fetch(`http://localhost:8081${path}`, {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+export async function nestAPI(path: string, body: unknown) {
+  const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

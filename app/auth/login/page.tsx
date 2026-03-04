@@ -1,60 +1,51 @@
-  'use client';
+'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
+import { authService } from '@/lib/auth';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import GlowingOrb from '@/components/GlowingOrb';
 
-export default function SupabaseAuth() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        router.push('/dashboard');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+
+    console.log('Form submitted, attempting auth...');
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        alert('Check your email for verification link!');
+        console.log('Calling register...');
+        const data = await authService.register(email, password, name);
+        console.log('Register response:', data);
+        authService.setToken(data.access_token);
+        window.location.href = '/dashboard';
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        console.log('Calling login...');
+        const data = await authService.login(email, password);
+        console.log('Login response:', data);
+        authService.setToken(data.access_token);
+        window.location.href = '/dashboard';
       }
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'An error occurred');
+    } catch (err) {
+      console.error('Auth error:', err);
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { 
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
-        }
-      }
-    });
-    if (error) alert(error.message);
+  const handleGoogleAuth = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   return (
@@ -87,7 +78,23 @@ export default function SupabaseAuth() {
           </div>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-md text-red-200 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleAuth}>
+          {isSignUp && (
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full mb-4 px-4 py-3 bg-white text-black rounded-md border border-gray-600 focus:border-cyan-500 focus:outline-none"
+              required
+            />
+          )}
           <input
             type="email"
             placeholder="Email"

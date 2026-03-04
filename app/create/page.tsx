@@ -14,6 +14,12 @@ import IdeaOutputViewer from "@/components/create-idea/IdeaOutputViewer";
 import TaglineGenerator from "@/components/create-idea/TaglineGenerator";
 import IdeaLoader from "@/components/create-idea/IdeaLoader";
 
+interface ToolResult {
+  content?: string;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+}
+
 interface ProcessResult {
   idea_id: string;
   status: string;
@@ -50,43 +56,105 @@ const CreateIdeaForm = () => {
   };
 
   const generateContent = async () => {
+    if (!description.trim()) {
+      alert('Please enter a description first');
+      return;
+    }
+
     setLoading(true);
     
-    // Mock response for presentation
-    const mockResult = {
-      idea_id: 'demo-' + Date.now(),
-      status: 'completed',
-      combined_result: `${description}\n\n**Enhanced Features:**\n• AI-powered optimization\n• Real-time analytics\n• User-friendly interface\n• Scalable architecture`,
-      per_tool_results: selectedTools.map(tool => ({
-        tool,
-        result: `Enhanced content for ${tool}`,
-        metadata: { demo: true }
-      })),
-      title,
-      description
-    };
-    
-    setTimeout(() => {
-      setResult(mockResult);
-      setIdeaId(mockResult.idea_id);
-      localStorage.setItem(`idea-${mockResult.idea_id}`, JSON.stringify(mockResult));
-      router.push(`/idea/${mockResult.idea_id}`);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('auth_token');
+      
+      const response = await fetch(`${API_URL}/idea-studio/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: description,
+          tools: selectedTools,
+          tone: 'professional',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to generate content' }));
+        throw new Error(errorData.message || 'Failed to generate content');
+      }
+
+      const data = await response.json();
+      console.log('Backend response:', data);
+      
+      if (!data.results) {
+        console.error('Invalid response structure:', data);
+        throw new Error(data.message || 'Invalid response from server');
+      }
+      
+      const results = data.results as Record<string, ToolResult>;
+      
+      const processedResult = {
+        idea_id: data.aiResultId || '',
+        status: 'completed',
+        combined_result: Object.values(results).map((r) => r.content || r.tags?.join(', ') || '').filter(Boolean).join('\n\n'),
+        per_tool_results: Object.entries(results).map(([tool, result]) => ({
+          tool,
+          result: result.content || result.tags?.join(', ') || '',
+          metadata: result.metadata || {}
+        })),
+        title,
+        description
+      };
+      
+      setResult(processedResult);
+      setIdeaId(processedResult.idea_id);
+    } catch (error) {
+      console.error('Generate error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate content. Please try again.';
+      alert(errorMessage);
+      setResult({ idea_id: '', status: 'failed', combined_result: '', per_tool_results: [] });
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const saveToVault = async () => {
-    if (!result) return;
+    if (!result || !title.trim()) {
+      alert('Please provide a title before saving');
+      return;
+    }
     
-    // Save locally for presentation
-    const localId = 'vault-' + Date.now();
-    const savedResult = { ...result, idea_id: localId };
-    
-    setResult(savedResult);
-    setIdeaId(localId);
-    
-    localStorage.setItem(`idea-${localId}`, JSON.stringify(savedResult));
-    router.push(`/idea/${localId}`);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('auth_token');
+      
+      const response = await fetch(`${API_URL}/ideas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          content: result.combined_result,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to save idea' }));
+        throw new Error(errorData.message || 'Failed to save idea');
+      }
+
+      const savedIdea = await response.json();
+      alert('Idea saved successfully!');
+      router.push(`/idea/${savedIdea.id}`);
+    } catch (error) {
+      console.error('Save error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save idea. Please try again.';
+      alert(errorMessage);
+    }
   };
 
   const handleSaveDraft = async () => {

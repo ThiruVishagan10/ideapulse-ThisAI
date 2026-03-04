@@ -17,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { authService } from "@/lib/auth";
 
 interface NavItem {
   id: string;
@@ -149,9 +149,9 @@ export default function SideNav() {
                 <span className="text-sm">Advanced Settings</span>
               </button>
               <button
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  window.location.href = "/";
+                onClick={() => {
+                  authService.removeToken();
+                  window.location.href = "/auth/login";
                 }}
                 className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-all duration-200 text-left"
               >

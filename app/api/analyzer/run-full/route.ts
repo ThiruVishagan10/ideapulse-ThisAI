@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_URL = process.env.API_URL || 'http://localhost:3001';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     console.log('Received request body:', body);
     
-    const response = await fetch('http://127.0.0.1:8081/api/analyzer/run-full', {
+    const response = await fetch(`${API_URL}/api/analyzer/run-full`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
