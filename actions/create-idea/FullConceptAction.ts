@@ -8,7 +8,7 @@ export async function generateFullConceptAction(
   let current = content;
 
   for (const step of steps) {
-    const res = await fetch("http://localhost:8081/api/ai/idea-tools", {
+    const res = await fetch("http://localhost:3000/api/ai/idea-tools", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

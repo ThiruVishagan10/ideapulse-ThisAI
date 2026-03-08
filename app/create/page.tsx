@@ -32,7 +32,6 @@ const CreateIdeaForm = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
-  const [ideaId, setIdeaId] = useState<string | null>(null);
   const [tagline, setTagline] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProcessResult | null>(null);
@@ -109,7 +108,6 @@ const CreateIdeaForm = () => {
       };
       
       setResult(processedResult);
-      setIdeaId(processedResult.idea_id);
     } catch (error) {
       console.error('Generate error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate content. Please try again.';
@@ -130,7 +128,7 @@ const CreateIdeaForm = () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const token = localStorage.getItem('auth_token');
       
-      const response = await fetch(`${API_URL}/ideas`, {
+      const response = await fetch(`${API_URL}/idea-vault/ideas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +136,7 @@ const CreateIdeaForm = () => {
         },
         body: JSON.stringify({
           title,
-          content: result.combined_result,
+          description: result.combined_result,
         }),
       });
 
@@ -170,7 +168,7 @@ const CreateIdeaForm = () => {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center md:ml-52">
+      <div className="fixed inset-0 flex items-center justify-center md:ml-52">
         <GlowingOrb />
       </div>
 

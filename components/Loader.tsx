@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function Loader() {
   return (
@@ -24,7 +25,7 @@ export default function Loader() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <img src="/idea-pulse-logo.png" alt="IdeaPulse" className="w-16 h-16 mx-auto mb-4" />
+          <Image src="/idea-pulse-logo.png" alt="IdeaPulse" width={64} height={64} className="mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white drop-shadow-lg">IDEAPULSE</h1>
         </motion.div>
 

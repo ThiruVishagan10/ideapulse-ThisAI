@@ -62,26 +62,30 @@ export default function IdeaPage() {
   React.useEffect(() => {
     const fetchIdeaData = async () => {
       try {
-        // Fetch from API (skip localStorage to ensure fresh data)
-        const response = await fetch(`http://127.0.0.1:8081/api/ideas`);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('auth_token');
+        
+        const response = await fetch(`${API_URL}/idea-vault/ideas/${ideaId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.ideas) {
-            const idea = data.ideas.find((i: DbIdea) => i.id === ideaId);
-            if (idea) {
-              setIdeaData({
-                idea_id: idea.id,
-                title: idea.title,
-                description: idea.original_text || '',
-                combined_result: idea.generated_text || '',
-                status: 'completed',
-                per_tool_results: idea.ai_tools_used ? (Array.isArray(idea.ai_tools_used) ? idea.ai_tools_used.map((tool: string | {tool: string; result?: string}) => ({
-                  tool: typeof tool === 'string' ? tool : tool.tool || 'unknown',
-                  result: typeof tool === 'object' ? tool.result || 'No details available' : 'Tool used'
-                })) : []) : []
-              });
-            }
-          }
+          const latestVersion = data.version.find((v: {version: number}) => v.version === data.currentVersion);
+          
+          setIdeaData({
+            idea_id: data.id,
+            title: latestVersion?.title || 'Untitled',
+            description: data.version[0]?.content || '',
+            combined_result: latestVersion?.content || '',
+            status: data.status.toLowerCase(),
+            per_tool_results: latestVersion?.aiResults?.map((ai: {tool: string; response: {content?: string}}) => ({
+              tool: ai.tool,
+              result: ai.response?.content || 'No details available'
+            })) || []
+          });
         }
       } catch (error) {
         console.error('Failed to fetch idea:', error);
@@ -400,62 +404,22 @@ export default function IdeaPage() {
               </div>
               <div className="space-y-3">
                 <button 
-                  onClick={async () => {
-                    try {
-                      const requestBody = {
-                        title: ideaData.title,
-                        original_text: ideaData.description,
-                        generated_text: ideaData.combined_result,
-                        creator_id: null,
-                        is_draft: false,
-                        is_ai_generated: true,
-                        ai_tools_used: ideaData.per_tool_results?.map((result: ToolResult) => ({
-                          tool: result.tool,
-                          result: result.result
-                        })) || ideaData.selectedTools?.map(tool => ({
-                          tool,
-                          result: 'Tool selected but no detailed results available'
-                        })) || []
-                      };
-                      
-                      const response = await fetch('http://127.0.0.1:8081/api/ideas', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestBody)
-                      });
-                      
-                      const responseText = await response.text();
-                      let data;
-                      try {
-                        data = responseText ? JSON.parse(responseText) : {};
-                      } catch {
-                        data = { error: 'Invalid JSON response', raw: responseText };
-                      }
-                      
-                      if (response.ok && data.success && data.idea?.id) {
-                        const toolsCount = ideaData.per_tool_results?.length || ideaData.selectedTools?.length || 0;
-                        const message = `Idea saved successfully to database! ${toolsCount} AI tools recorded.`;
-                        setPopup({show: true, message, type: 'success'});
-                      } else {
-                        const errorMsg = data.error || data.message || data.details || responseText || `HTTP ${response.status}: ${response.statusText}`;
-                        setPopup({show: true, message: `Save failed: ${errorMsg}`, type: 'error'});
-                      }
-                    } catch {
-                      setPopup({show: true, message: 'Backend server not available. Please check if the server is running on port 8081.', type: 'error'});
-                    }
+                  onClick={() => {
+                    setPopup({show: true, message: 'This idea is already in your vault!', type: 'success'});
                   }}
-                  className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+                  className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-600 to-gray-700 rounded-xl transition-all duration-200 shadow-lg cursor-not-allowed opacity-75"
+                  disabled
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                      <BookOpen className="w-5 h-5 text-white" />
+                    <div className="p-2 bg-white/10 rounded-lg transition-colors">
+                      <Check className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
-                      <span className="text-sm text-white font-semibold block">Save to Vault</span>
-                      <span className="text-xs text-blue-100 opacity-80">Store in your collection</span>
+                      <span className="text-sm text-white font-semibold block">Already in Vault</span>
+                      <span className="text-xs text-gray-100 opacity-80">This idea is saved</span>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:scale-110 transition-all" />
+                  <Check className="w-4 h-4 text-white/60" />
                 </button>
                 
                 <button 

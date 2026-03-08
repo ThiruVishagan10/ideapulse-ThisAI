@@ -20,7 +20,7 @@ export async function runAIToolAction(
     throw new Error(`Unsupported tool: ${tool}`);
   }
 
-  const apiUrl = process.env.AI_API_URL || "https://localhost:8081";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
   
   const response = await fetch(`${apiUrl}/api/ai/idea-tools`, {
     method: "POST",

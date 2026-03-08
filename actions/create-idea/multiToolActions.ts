@@ -1,7 +1,7 @@
 "use server";
 
 export async function runMultiToolJob(idea_id: string, content: string, tools: string[]) {
-  const res = await fetch("http://localhost:8081/api/ai/multi-tools", {
+  const res = await fetch("http://localhost:3001/api/ai/multi-tools", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
