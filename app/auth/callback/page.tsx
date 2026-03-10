@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/auth';
 
-export default function CallbackPage() {
+function CallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const token = searchParams.get('token');
     const code = searchParams.get('code');
-    
+
     if (token) {
       authService.setToken(token);
       window.location.href = '/dashboard';
     } else if (code) {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://idea-pulse-backend.vercel.app';
+
       fetch(`${API_URL}/auth/google/callback?code=${code}`)
         .then(res => res.json())
         .then(data => {
@@ -44,5 +44,20 @@ export default function CallbackPage() {
         <p>Completing sign in...</p>
       </div>
     </div>
+  );
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p>Completing sign in...</p>
+        </div>
+      </div>
+    }>
+      <CallbackInner />
+    </Suspense>
   );
 }

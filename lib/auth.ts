@@ -1,61 +1,50 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-console.log('Auth Service API_URL:', API_URL);
-
-export interface AuthResponse {
-  access_token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://idea-pulse-backend.vercel.app';
+const TOKEN_KEY = 'ideapulse_token';
 
 export const authService = {
-  async register(email: string, password: string, name: string): Promise<AuthResponse> {
-    console.log('Registering user:', { email, name, url: `${API_URL}/auth/register` });
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name }),
-    });
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Registration failed:', error);
-      throw new Error('Registration failed');
-    }
-    return response.json();
-  },
-
-  async login(email: string, password: string): Promise<AuthResponse> {
-    console.log('Logging in user:', { email, url: `${API_URL}/auth/login` });
-    const response = await fetch(`${API_URL}/auth/login`, {
+  async login(email: string, password: string): Promise<{ access_token: string }> {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Login failed:', error);
-      throw new Error('Login failed');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Login failed');
     }
-    return response.json();
+    return res.json();
   },
 
-  setToken(token: string) {
-    localStorage.setItem('auth_token', token);
-    // Also set as cookie for middleware
-    document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+  async register(email: string, password: string, name: string): Promise<{ access_token: string }> {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Registration failed');
+    }
+    return res.json();
+  },
+
+  setToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
   },
 
   getToken(): string | null {
-    return localStorage.getItem('auth_token');
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(TOKEN_KEY);
+    }
+    return null;
   },
 
-  removeToken() {
-    localStorage.removeItem('auth_token');
-    // Also remove cookie
-    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  removeToken(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(TOKEN_KEY);
+    }
   },
 
   isAuthenticated(): boolean {

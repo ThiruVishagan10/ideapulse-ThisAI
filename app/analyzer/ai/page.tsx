@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Play, Loader2, CheckCircle, Clock, AlertCircle, BarChart3 } from 'lucide-react';
 import SideNav from '@/components/SideNav';
 import { useSearchParams } from 'next/navigation';
@@ -97,7 +97,7 @@ const V3_SECTIONS = {
   specialist: ['legal_considerations', 'financial_projections', 'marketing_strategy', 'operational_plan', 'scalability_analysis', 'exit_strategy']
 };
 
-const AIAnalyzerV3: React.FC = () => {
+const AIAnalyzerV3Inner: React.FC = () => {
   const searchParams = useSearchParams();
   const ideaId = searchParams.get('idea_id');
   
@@ -427,5 +427,15 @@ const AIAnalyzerV3: React.FC = () => {
     </div>
   );
 };
+
+const AIAnalyzerV3: React.FC = () => (
+  <Suspense fallback={
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin" />
+    </div>
+  }>
+    <AIAnalyzerV3Inner />
+  </Suspense>
+);
 
 export default AIAnalyzerV3;

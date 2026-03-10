@@ -34,20 +34,145 @@ interface DbIdea {
 
 
 
-// Enhanced markdown parser for better formatting
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const applyInlineMarkdown = (line: string) =>
+  line
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-800/80 px-1.5 py-0.5 rounded text-cyan-300 font-mono text-xs border border-gray-700">$1</code>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>')
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic text-gray-200">$1</em>');
+
 const parseMarkdown = (text: string) => {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>') // Bold
-    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic text-gray-200">$1</em>') // Italic
-    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-blue-300 mt-6 mb-3 border-b border-gray-700 pb-2">$1</h3>') // H3
-    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-blue-200 mt-8 mb-4 border-b border-gray-600 pb-2">$1</h2>') // H2
-    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-blue-100 mt-8 mb-4 border-b border-gray-500 pb-3">$1</h1>') // H1
-    .replace(/^(\s*)\* (.*$)/gm, '<li class="ml-6 mb-2 text-gray-300 relative before:content-[\"•\"] before:text-blue-400 before:absolute before:-left-4">$2</li>') // Bullet points
-    .replace(/^(\s*)\d+\. (.*$)/gm, '<li class="ml-6 mb-2 text-gray-300 list-decimal">$2</li>') // Numbered lists
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-2 py-1 rounded text-cyan-300 font-mono text-sm border border-gray-700">$1</code>') // Inline code
-    .replace(/---+/g, '<hr class="border-gray-600 my-8 border-t-2" />') // Horizontal rule
-    .replace(/\n\s*\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">') // Paragraphs
-    .replace(/\n/g, '<br />'); // Line breaks
+  const lines = text.split(/\r?\n/);
+  const html: string[] = [];
+  let inUnorderedList = false;
+  let inOrderedList = false;
+  let inCodeBlock = false;
+  let paragraph: string[] = [];
+
+  const closeParagraph = () => {
+    if (paragraph.length === 0) return;
+    html.push(`<p class="mb-4 text-gray-300 leading-relaxed">${paragraph.join("<br />")}</p>`);
+    paragraph = [];
+  };
+
+  const closeLists = () => {
+    if (inUnorderedList) {
+      html.push("</ul>");
+      inUnorderedList = false;
+    }
+    if (inOrderedList) {
+      html.push("</ol>");
+      inOrderedList = false;
+    }
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd();
+
+    if (line.startsWith("```")) {
+      closeParagraph();
+      closeLists();
+      if (inCodeBlock) {
+        html.push("</code></pre>");
+      } else {
+        html.push('<pre class="mb-4 rounded-lg border border-gray-700 bg-gray-900/80 p-4 overflow-x-auto"><code class="font-mono text-xs text-cyan-200">');
+      }
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+
+    if (inCodeBlock) {
+      html.push(`${escapeHtml(line)}\n`);
+      continue;
+    }
+
+    if (line === "") {
+      closeParagraph();
+      closeLists();
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.*)$/);
+    if (heading) {
+      closeParagraph();
+      closeLists();
+      const level = heading[1].length;
+      const content = applyInlineMarkdown(escapeHtml(heading[2]));
+      const headingClasses =
+        level === 1
+          ? "text-2xl md:text-3xl font-bold text-blue-100 mt-7 mb-4 border-b border-gray-600 pb-2"
+          : level === 2
+            ? "text-xl md:text-2xl font-bold text-blue-200 mt-6 mb-3 border-b border-gray-700 pb-2"
+            : "text-lg font-semibold text-blue-300 mt-5 mb-2";
+      html.push(`<h${level} class="${headingClasses}">${content}</h${level}>`);
+      continue;
+    }
+
+    if (/^---+$/.test(line)) {
+      closeParagraph();
+      closeLists();
+      html.push('<hr class="my-6 border-gray-700" />');
+      continue;
+    }
+
+    const unorderedItem = line.match(/^\s*[-*]\s+(.*)$/);
+    if (unorderedItem) {
+      closeParagraph();
+      if (!inUnorderedList) {
+        if (inOrderedList) {
+          html.push("</ol>");
+          inOrderedList = false;
+        }
+        html.push('<ul class="mb-4 list-disc pl-6 space-y-1 text-gray-300">');
+        inUnorderedList = true;
+      }
+      html.push(`<li>${applyInlineMarkdown(escapeHtml(unorderedItem[1]))}</li>`);
+      continue;
+    }
+
+    const orderedItem = line.match(/^\s*(\d+)\.\s+(.*)$/);
+    if (orderedItem) {
+      closeParagraph();
+      if (!inOrderedList) {
+        if (inUnorderedList) {
+          html.push("</ul>");
+          inUnorderedList = false;
+        }
+        html.push('<ol class="mb-4 list-decimal pl-6 space-y-1 text-gray-300">');
+        inOrderedList = true;
+      }
+      html.push(`<li>${applyInlineMarkdown(escapeHtml(orderedItem[2]))}</li>`);
+      continue;
+    }
+
+    const quote = line.match(/^\s*>\s?(.*)$/);
+    if (quote) {
+      closeParagraph();
+      closeLists();
+      html.push(
+        `<blockquote class="mb-4 border-l-4 border-blue-500/50 pl-4 text-gray-300 italic">${applyInlineMarkdown(escapeHtml(quote[1]))}</blockquote>`
+      );
+      continue;
+    }
+
+    closeLists();
+    paragraph.push(applyInlineMarkdown(escapeHtml(line)));
+  }
+
+  closeParagraph();
+  closeLists();
+  if (inCodeBlock) {
+    html.push("</code></pre>");
+  }
+
+  return html.join("");
 };
 
 export default function IdeaPage() {
@@ -227,9 +352,16 @@ export default function IdeaPage() {
                 <h3 className="text-xl font-bold text-white">Original Description</h3>
               </div>
               <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-700/30">
-                <p className="text-gray-300 leading-relaxed text-sm">
-                  {ideaData.description || 'No original description available.'}
-                </p>
+                {ideaData.description ? (
+                  <div
+                    className="text-gray-300 leading-relaxed prose prose-invert max-w-none text-sm prose-headings:text-white prose-strong:text-white"
+                    dangerouslySetInnerHTML={{
+                      __html: parseMarkdown(ideaData.description)
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-400 italic text-sm">No original description available.</p>
+                )}
               </div>
             </div>
 
@@ -246,10 +378,10 @@ export default function IdeaPage() {
               </div>
               <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-700/30">
                 {ideaData.combined_result ? (
-                  <div 
-                    className="text-gray-300 leading-relaxed prose prose-invert max-w-none text-sm"
-                    dangerouslySetInnerHTML={{ 
-                      __html: '<p class="mb-4 text-gray-300 leading-relaxed">' + parseMarkdown(ideaData.combined_result) + '</p>'
+                  <div
+                    className="text-gray-300 leading-relaxed prose prose-invert max-w-none text-sm prose-headings:text-white prose-strong:text-white"
+                    dangerouslySetInnerHTML={{
+                      __html: parseMarkdown(ideaData.combined_result)
                     }}
                   />
                 ) : (

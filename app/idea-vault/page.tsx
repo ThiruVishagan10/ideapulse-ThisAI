@@ -1,10 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, Clock, Star } from "lucide-react";
+import { Archive, Clock, Star, Sparkles } from "lucide-react";
 import SideNav from "@/components/SideNav";
 import GlowingOrb from "@/components/GlowingOrb";
 import Particles from "@/components/particles";
+
+interface AiResult {
+  tool: string;
+  response?: { content?: string };
+}
 
 interface IdeaVersion {
   id: string;
@@ -13,6 +18,7 @@ interface IdeaVersion {
   content: string;
   sourceType: "USER" | "AI";
   createdAt: string;
+  aiResults?: AiResult[];
 }
 
 interface Idea {
@@ -24,6 +30,30 @@ interface Idea {
   updatedAt: string;
   version: IdeaVersion[];
 }
+
+const getToolDisplayName = (tool: string): string => {
+  const toolNames: Record<string, string> = {
+    expand: "Expand",
+    summarize: "Summarize",
+    use_cases: "Use Cases",
+    technical: "Technical",
+    market_positioning: "Market",
+    roadmap: "Roadmap",
+  };
+  return toolNames[tool] || tool;
+};
+
+const getToolColor = (tool: string): string => {
+  const colors: Record<string, string> = {
+    expand: "bg-green-500/20 text-green-400 border-green-500/30",
+    summarize: "bg-violet-500/20 text-violet-400 border-violet-500/30",
+    use_cases: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+    technical: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+    market_positioning: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    roadmap: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+  };
+  return colors[tool] || "bg-slate-500/20 text-slate-400 border-slate-500/30";
+};
 
 export default function IdeaVault() {
   const router = useRouter();
@@ -115,9 +145,33 @@ export default function IdeaVault() {
                       )}
                     </div>
                     
-                    <p className="text-sm text-slate-400 mb-4 line-clamp-3">
+                    <p className="text-sm text-slate-400 mb-3 line-clamp-2">
                       {latestVersion?.content || ''}
                     </p>
+
+                    {latestVersion?.aiResults && latestVersion.aiResults.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Sparkles className="w-3 h-3 text-purple-400" />
+                          <span className="text-xs text-slate-500">AI Tools Used</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {latestVersion.aiResults.slice(0, 4).map((ai, index) => (
+                            <span
+                              key={index}
+                              className={`px-2 py-0.5 text-[10px] font-medium rounded border ${getToolColor(ai.tool)}`}
+                            >
+                              {getToolDisplayName(ai.tool)}
+                            </span>
+                          ))}
+                          {latestVersion.aiResults.length > 4 && (
+                            <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-slate-500/20 text-slate-400 border border-slate-500/30">
+                              +{latestVersion.aiResults.length - 4}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between text-xs text-slate-500">
                       <div className="flex items-center gap-1">
