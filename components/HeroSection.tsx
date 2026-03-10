@@ -3,8 +3,11 @@
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { preload } from 'react-dom';
 import Particles from './particles';
 import { authService } from '@/lib/auth';
+
+preload('/space-horizon-moewalls-com.mp4', { as: 'video', type: 'video/mp4' });
 
 export default function HeroSection() {
   const router = useRouter();
@@ -31,6 +34,7 @@ export default function HeroSection() {
         loop
         muted
         playsInline
+        preload="auto"
       >
         <source src="/space-horizon-moewalls-com.mp4" type="video/mp4" />
       </video>
